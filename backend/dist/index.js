@@ -1,22 +1,41 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const app_1 = require("./app");
-// load the environment variables from the .env file
-function bootstrap() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const application = new app_1.Application();
-        yield application.init();
-        application.start();
-    });
-}
-bootstrap();
-//# sourceMappingURL=index.js.map
+require('dotenv').config();
+const express = require('express');
+const apiRoutes = require('./routes/api')
+
+const app = express();
+const port = process.env.PORT;
+const hostname = process.env.HOST_NAME;
+
+// config file upload
+
+const configViewEngine = require('./config/viewEngine');
+const { connection } = require('./config/database');
+
+const { default: mongoose } = require('mongoose');
+// const fileUpload = require('express-fileupload')
+// app.use(fileUpload());
+
+
+// config template engine
+configViewEngine(app)
+
+// using req.body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Khai báo route
+app.use("/v1/api/", apiRoutes)
+; (async () => {
+  try {
+    await connection().then();
+    app.listen(port, hostname, () => {
+      console.log(`Example app listening on port ${port}`);
+    })
+  }
+  catch (error) {
+    console.log('hehe', error);
+  }
+})()
+
+
+
+
